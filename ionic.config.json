@@ -1,0 +1,7 @@
+{
+  "name": "CrimpTask",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
