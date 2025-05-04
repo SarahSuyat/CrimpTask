@@ -33,6 +33,8 @@ import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 import Login from './pages/Login';
+import Register from './pages/Register';
+
 
 setupIonicReact();
 
@@ -40,12 +42,11 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-      <Route exact path="/CrimpTask/home">
-          <Home />
-        </Route>
-        <Route exact path="/CrimpTask/">
-           <Redirect to="/CrimpTask/home" />
-        </Route>
+      <Route exact path="/CrimpTask" component={Login} />
+     
+      <Route exact path="/register" component={Register} />
+      
+        
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

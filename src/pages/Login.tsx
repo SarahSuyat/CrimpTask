@@ -19,7 +19,7 @@ import {
     const navigation = useIonRouter();
   
     const doLogin = () => {
-        navigation.push('/it35-lab/app','forward','replace');
+        navigation.push('/CrimpTask/app','forward','replace');
       };
   
       const goToRegister = () => {
