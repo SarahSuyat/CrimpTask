@@ -36,6 +36,7 @@ import './theme/variables.css';
 import Login from './pages/Login';
 import Menu from './pages/Menu';
 import Register from './pages/Register';
+import TaskDetailPage from './pages/TaskDetailPage';
 
 setupIonicReact();
 
@@ -46,6 +47,8 @@ const App: React.FC = () => (
         <Route exact path="/CrimpTask" component={Login} />
         <Route path="/CrimpTask/app" component={Menu} />
         <Route exact path="/register" component={Register} />
+        <Route path="/task/:id" component={TaskDetailPage} exact />
+
 
           
       </IonRouterOutlet>
