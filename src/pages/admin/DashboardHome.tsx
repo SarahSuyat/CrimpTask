@@ -29,25 +29,28 @@ const DashboardHome: React.FC = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      // Total Students
-      const { count: studentCount } = await supabase
+      // ✅ Fix: use "user_type" instead of "role"
+      const { count: studentCount, error: studentError } = await supabase
         .from("users")
         .select("*", { count: "exact", head: true })
-        .eq("role", "student");
+        .eq("user_type", "student");
 
-      // Total Tasks
-      const { count: taskCount } = await supabase
+      if (studentError) console.error("Error fetching students:", studentError);
+      setTotalStudents(studentCount ?? 0);
+
+      const { count: taskCount, error: taskError } = await supabase
         .from("tasks")
         .select("*", { count: "exact", head: true });
 
-      // Pending Submissions (example assumes is_submitted = false means pending)
-      const { count: pendingCount } = await supabase
+      if (taskError) console.error("Error fetching tasks:", taskError);
+      setTotalTasks(taskCount ?? 0);
+
+      const { count: pendingCount, error: submissionError } = await supabase
         .from("submissions")
         .select("*", { count: "exact", head: true })
         .eq("is_submitted", false);
 
-      setTotalStudents(studentCount ?? 0);
-      setTotalTasks(taskCount ?? 0);
+      if (submissionError) console.error("Error fetching submissions:", submissionError);
       setPendingSubmissions(pendingCount ?? 0);
     };
 
