@@ -16,7 +16,6 @@ import {
 import { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
-
 const Home: React.FC = () => {
   const [studentName, setStudentName] = useState('');
   const [summaryData, setSummaryData] = useState([
@@ -26,38 +25,51 @@ const Home: React.FC = () => {
   ]);
 
   useIonViewWillEnter(async () => {
-    const user = supabase.auth.getUser();
-    const { data: sessionData } = await user;
-    const userId = sessionData?.user?.id;
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (!userId) return;
+    if (userError || !user) {
+      console.error("Error getting user:", userError);
+      return;
+    }
 
-    // Fetch profile name
-    const { data: profile } = await supabase
+    const userId = user.id;
+
+    // Fetch student name
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', userId)
       .single();
 
-    setStudentName(profile?.full_name || 'Student');
+    if (profileError) {
+      console.error("Error fetching profile:", profileError);
+    } else {
+      setStudentName(profile?.full_name || 'Student');
+    }
 
-    // Fetch submission data
-    const { data: tasks } = await supabase
+    // Fetch task submission data for the user
+    const { data: submissions, error: submissionsError } = await supabase
       .from('submissions')
       .select('status')
       .eq('user_id', userId);
 
-    if (tasks) {
-      const assigned = tasks.length;
-      const completed = tasks.filter((t) => t.status === 'Submitted').length;
-      const pending = tasks.filter((t) => t.status !== 'Submitted').length;
-
-      setSummaryData([
-        { title: 'Tasks Assigned', count: assigned, icon: '📦', color: '#3b82f6' },
-        { title: 'Tasks Completed', count: completed, icon: '✅', color: '#10b981' },
-        { title: 'Pending / Late', count: pending, icon: '⚠️', color: '#f59e0b' },
-      ]);
+    if (submissionsError) {
+      console.error("Error fetching submissions:", submissionsError);
+      return;
     }
+
+    const assigned = submissions?.length || 0;
+    const completed = submissions?.filter((s) => s.status === 'Submitted').length || 0;
+    const pending = assigned - completed;
+
+    setSummaryData([
+      { title: 'Tasks Assigned', count: assigned, icon: '📦', color: '#3b82f6' },
+      { title: 'Tasks Completed', count: completed, icon: '✅', color: '#10b981' },
+      { title: 'Pending / Late', count: pending, icon: '⚠️', color: '#f59e0b' },
+    ]);
   });
 
   return (
@@ -68,12 +80,10 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {/* Welcome Message */}
         <h2 style={{ fontWeight: 'bold', marginTop: '10px' }}>
           Welcome, {studentName}!
         </h2>
 
-        {/* Summary Cards */}
         <IonGrid>
           <IonRow>
             {summaryData.map((card, index) => (

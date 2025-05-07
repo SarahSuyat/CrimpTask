@@ -18,10 +18,9 @@ import {
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
-
 const TaskDetailPage: React.FC = () => {
   const [timerStarted, setTimerStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600);
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const [showWarning, setShowWarning] = useState(false);
   const [isLate, setIsLate] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -31,6 +30,9 @@ const TaskDetailPage: React.FC = () => {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Hardcoded task ID for now — replace with dynamic value
+  const taskId = 1;
 
   useEffect(() => {
     let interval: any;
@@ -52,10 +54,10 @@ const TaskDetailPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [timerStarted, timeLeft]);
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const formatInterval = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins} minutes ${secs} seconds`;
   };
 
   const handleFinishTask = () => {
@@ -76,7 +78,8 @@ const TaskDetailPage: React.FC = () => {
         .upload(filePath, uploadFile);
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error('Upload error:', uploadError.message);
+        alert('❌ Upload failed: ' + uploadError.message);
         setSubmitting(false);
         return;
       }
@@ -84,30 +87,38 @@ const TaskDetailPage: React.FC = () => {
       const { data: fileData } = supabase.storage
         .from('submissions')
         .getPublicUrl(filePath);
+
       mediaUrl = fileData?.publicUrl || null;
     }
 
-    const user = await supabase.auth.getUser();
-    const studentName = user.data?.user?.email || 'Unknown';
-
-    const { error } = await supabase.from('submissions').insert([
-      {
-        student_name: studentName,
-        task_name: 'Sample Task',
-        status: isLate ? 'Late' : 'Submitted',
-        time_taken: formatTime(timeConsumed),
-        media_url: mediaUrl,
-        comment,
-      },
-    ]);
-
-    if (error) {
-      console.error('Submit error:', error);
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      alert('❌ User not authenticated.');
       setSubmitting(false);
       return;
     }
 
-    const content = `📋 Task Report\nStatus: ${isLate ? 'Late' : 'On Time'}\nSubmitted: Yes\nTime Consumed: ${formatTime(timeConsumed)}`;
+    const userId = userData.user.id;
+
+    const { error: insertError } = await supabase.from('submissions').insert([
+      {
+        user_id: userId,
+        task_id: taskId,
+        status: isLate ? 'Late' : 'Submitted',
+        time_taken: `${Math.floor(timeConsumed / 60)} minutes ${timeConsumed % 60} seconds`,
+        media_url: mediaUrl,
+        evaluation_notes: comment || null,
+      },
+    ]);
+
+    if (insertError) {
+      console.error('Insert error:', insertError.message);
+      alert('❌ Submission failed: ' + insertError.message);
+      setSubmitting(false);
+      return;
+    }
+
+    const content = `📋 Task Report\nStatus: ${isLate ? 'Late' : 'On Time'}\nSubmitted: Yes\nTime Consumed: ${formatInterval(timeConsumed)}`;
     setReportContent(content);
     setShowModal(true);
     setSubmitting(false);
@@ -149,7 +160,7 @@ const TaskDetailPage: React.FC = () => {
           <>
             <div style={{ textAlign: 'center', marginTop: '16px' }}>
               <IonText color={timeLeft <= 120 ? 'danger' : 'primary'}>
-                🕒 Time Remaining: <strong>{formatTime(timeLeft)}</strong>
+                🕒 Time Remaining: <strong>{formatInterval(timeLeft)}</strong>
               </IonText>
             </div>
             <IonButton expand="block" color="warning" className="ion-margin-top" onClick={handleFinishTask}>
@@ -163,7 +174,7 @@ const TaskDetailPage: React.FC = () => {
             <IonCard className="ion-margin-top">
               <IonCardContent>
                 <IonText>
-                  ⏱ <strong>Time Consumed:</strong> {formatTime(timeConsumed)}
+                  ⏱ <strong>Time Consumed:</strong> {formatInterval(timeConsumed)}
                 </IonText>
                 <IonItem>
                   <IonLabel position="stacked">📤 Upload Evidence (Image/Video/File)</IonLabel>
@@ -219,7 +230,7 @@ const TaskDetailPage: React.FC = () => {
             <IonText>
               <h2>✅ Task Submitted!</h2>
               <p>{isLate ? 'Note: Your submission was late.' : 'You submitted on time.'}</p>
-              <p>⏱ Time Taken: {formatTime(timeConsumed)}</p>
+              <p>⏱ Time Taken: {formatInterval(timeConsumed)}</p>
             </IonText>
             <IonButton expand="block" onClick={() => setShowModal(false)}>
               Close
