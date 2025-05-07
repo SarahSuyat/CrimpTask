@@ -15,8 +15,6 @@ import {
 
 import {
   listOutline,
-  barChartOutline,
-  chatboxEllipsesOutline,
   personOutline,
   logOutOutline,
   homeOutline,

@@ -10,6 +10,7 @@ import {
   IonRow,
   IonTitle,
   IonToolbar,
+  IonText,
 } from "@ionic/react";
 
 import {
@@ -18,24 +19,57 @@ import {
   cloudUploadOutline,
 } from "ionicons/icons";
 
+import { useEffect, useState } from "react";
+import { supabase } from "../../utils/supabaseClient";
+
 const DashboardHome: React.FC = () => {
-  // Updated stats without the "Completed & Evaluated" card
+  const [totalStudents, setTotalStudents] = useState<number>(0);
+  const [totalTasks, setTotalTasks] = useState<number>(0);
+  const [pendingSubmissions, setPendingSubmissions] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Total Students
+      const { count: studentCount } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "student");
+
+      // Total Tasks
+      const { count: taskCount } = await supabase
+        .from("tasks")
+        .select("*", { count: "exact", head: true });
+
+      // Pending Submissions (example assumes is_submitted = false means pending)
+      const { count: pendingCount } = await supabase
+        .from("submissions")
+        .select("*", { count: "exact", head: true })
+        .eq("is_submitted", false);
+
+      setTotalStudents(studentCount ?? 0);
+      setTotalTasks(taskCount ?? 0);
+      setPendingSubmissions(pendingCount ?? 0);
+    };
+
+    fetchStats();
+  }, []);
+
   const summaryStats = [
     {
       title: "Total Students",
-      count: 120,
+      count: totalStudents,
       icon: peopleOutline,
       color: "primary",
     },
     {
       title: "Total Tasks Created",
-      count: 45,
+      count: totalTasks,
       icon: documentTextOutline,
       color: "tertiary",
     },
     {
       title: "Pending Submissions",
-      count: 18,
+      count: pendingSubmissions,
       icon: cloudUploadOutline,
       color: "warning",
     },
@@ -58,7 +92,7 @@ const DashboardHome: React.FC = () => {
                   <IonCardContent className="ion-text-center">
                     <IonIcon icon={stat.icon} style={{ fontSize: "40px" }} />
                     <h2>{stat.count}</h2>
-                    <p>{stat.title}</p>
+                    <IonText>{stat.title}</IonText>
                   </IonCardContent>
                 </IonCard>
               </IonCol>

@@ -11,31 +11,54 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  useIonViewWillEnter,
 } from '@ionic/react';
+import { useState } from 'react';
+import { supabase } from '../utils/supabaseClient';
+
 
 const Home: React.FC = () => {
-  const studentName = 'Bro'; // Replace with dynamic name from session or storage
+  const [studentName, setStudentName] = useState('');
+  const [summaryData, setSummaryData] = useState([
+    { title: 'Tasks Assigned', count: 0, icon: '📦', color: '#3b82f6' },
+    { title: 'Tasks Completed', count: 0, icon: '✅', color: '#10b981' },
+    { title: 'Pending / Late', count: 0, icon: '⚠️', color: '#f59e0b' },
+  ]);
 
-  const summaryData = [
-    {
-      title: 'Tasks Assigned',
-      count: 12,
-      icon: '📦',
-      color: '#3b82f6', // blue
-    },
-    {
-      title: 'Tasks Completed',
-      count: 8,
-      icon: '✅',
-      color: '#10b981', // green
-    },
-    {
-      title: 'Pending / Late',
-      count: 4,
-      icon: '⚠️',
-      color: '#f59e0b', // yellow
-    },
-  ];
+  useIonViewWillEnter(async () => {
+    const user = supabase.auth.getUser();
+    const { data: sessionData } = await user;
+    const userId = sessionData?.user?.id;
+
+    if (!userId) return;
+
+    // Fetch profile name
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', userId)
+      .single();
+
+    setStudentName(profile?.full_name || 'Student');
+
+    // Fetch submission data
+    const { data: tasks } = await supabase
+      .from('submissions')
+      .select('status')
+      .eq('user_id', userId);
+
+    if (tasks) {
+      const assigned = tasks.length;
+      const completed = tasks.filter((t) => t.status === 'Submitted').length;
+      const pending = tasks.filter((t) => t.status !== 'Submitted').length;
+
+      setSummaryData([
+        { title: 'Tasks Assigned', count: assigned, icon: '📦', color: '#3b82f6' },
+        { title: 'Tasks Completed', count: completed, icon: '✅', color: '#10b981' },
+        { title: 'Pending / Late', count: pending, icon: '⚠️', color: '#f59e0b' },
+      ]);
+    }
+  });
 
   return (
     <IonPage>
@@ -45,7 +68,6 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-
         {/* Welcome Message */}
         <h2 style={{ fontWeight: 'bold', marginTop: '10px' }}>
           Welcome, {studentName}!

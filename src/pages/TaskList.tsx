@@ -11,39 +11,37 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  useIonViewWillEnter,
 } from '@ionic/react';
+import React, { useState } from 'react';
+import { supabase } from '../utils/supabaseClient';
+
+
+interface Task {
+  id: number;
+  title: string;
+  due_date: string;
+  time_limit: string;
+  status: 'Not Started' | 'In Progress' | 'Completed' | 'Late';
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  allow_upload: boolean;
+}
 
 const TaskList: React.FC = () => {
-  // Sample tasks (replace with Supabase data later)
-  const tasks = [
-    {
-      id: 1,
-      title: 'Research Paper',
-      dueDate: '2025-05-10',
-      timeLimit: '30 mins',
-      status: 'Not Started',
-      difficulty: 'Hard',
-      allowUpload: true,
-    },
-    {
-      id: 2,
-      title: 'LAN Cable Crimping Task',
-      dueDate: '2025-05-08',
-      timeLimit: '10 mins',
-      status: 'Completed',
-      difficulty: 'Medium',
-      allowUpload: false,
-    },
-    {
-      id: 3,
-      title: 'Project Proposal',
-      dueDate: '2025-05-12',
-      timeLimit: '45 mins',
-      status: 'Late',
-      difficulty: 'Hard',
-      allowUpload: true,
-    },
-  ];
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useIonViewWillEnter(async () => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('due_date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching tasks:', error);
+    } else {
+      setTasks(data || []);
+    }
+  });
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -64,7 +62,7 @@ const TaskList: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>📋 B. Task List Page</IonTitle>
+          <IonTitle>📋 Task List</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
@@ -73,18 +71,26 @@ const TaskList: React.FC = () => {
             <IonCardContent>
               <IonGrid>
                 <IonRow className="ion-align-items-center ion-text-center">
-                  <IonCol size="12" sizeMd="2">📌 <strong>{task.title}</strong></IonCol>
-                  <IonCol size="6" sizeMd="2">📅 {task.dueDate}</IonCol>
-                  <IonCol size="6" sizeMd="2">⏳ {task.timeLimit}</IonCol>
+                  <IonCol size="12" sizeMd="2">
+                    📌 <strong>{task.title}</strong>
+                  </IonCol>
+                  <IonCol size="6" sizeMd="2">
+                    📅 {task.due_date}
+                  </IonCol>
+                  <IonCol size="6" sizeMd="2">
+                    ⏳ {task.time_limit}
+                  </IonCol>
                   <IonCol size="6" sizeMd="2">
                     <IonBadge color={statusColor(task.status)}>{task.status}</IonBadge>
                   </IonCol>
-                  <IonCol size="6" sizeMd="2">📈 {task.difficulty}</IonCol>
+                  <IonCol size="6" sizeMd="2">
+                    📈 {task.difficulty}
+                  </IonCol>
                   <IonCol size="12" sizeMd="2">
                     <IonButton color="primary" size="small" routerLink={`/task/${task.id}`}>
                       🧾 View Task
                     </IonButton>
-                    {task.allowUpload && (
+                    {task.allow_upload && (
                       <IonButton color="secondary" size="small" className="ion-margin-start">
                         📤 Upload
                       </IonButton>

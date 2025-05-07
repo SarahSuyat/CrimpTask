@@ -17,8 +17,6 @@ import {
     homeOutline,
     listOutline,
     peopleOutline,
-    barChartOutline,
-    chatboxOutline,
     personOutline,
     logOutOutline,
   } from "ionicons/icons";

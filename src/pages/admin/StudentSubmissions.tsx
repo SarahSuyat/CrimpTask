@@ -12,44 +12,32 @@ import {
   IonToolbar,
 } from "@ionic/react";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../utils/supabaseClient";
+
 
 interface Submission {
   id: number;
-  studentName: string;
-  taskName: string;
+  student_name: string;
+  task_name: string;
   status: "Submitted" | "Not Submitted" | "Late";
-  timeTaken: string;
-  mediaUrl?: string;
+  time_taken: string;
+  media_url?: string;
 }
 
-const submissions: Submission[] = [
-  {
-    id: 1,
-    studentName: "Juan Dela Cruz",
-    taskName: "Cable Crimping 101",
-    status: "Submitted",
-    timeTaken: "25 mins",
-    mediaUrl: "https://via.placeholder.com/150",
-  },
-  {
-    id: 2,
-    studentName: "Maria Santos",
-    taskName: "Cable Crimping 101",
-    status: "Late",
-    timeTaken: "40 mins",
-    mediaUrl: "https://via.placeholder.com/150",
-  },
-  {
-    id: 3,
-    studentName: "Pedro Reyes",
-    taskName: "Cable Crimping 101",
-    status: "Not Submitted",
-    timeTaken: "-",
-  },
-];
-
 const StudentSubmissions: React.FC = () => {
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      const { data, error } = await supabase.from("submissions").select("*").order("id", { ascending: true });
+      if (error) console.error("Error fetching submissions:", error);
+      else setSubmissions(data || []);
+    };
+
+    fetchSubmissions();
+  }, []);
+
   return (
     <IonPage>
       <IonHeader>
@@ -75,23 +63,21 @@ const StudentSubmissions: React.FC = () => {
 
               {submissions.map((sub) => (
                 <IonRow key={sub.id}>
-                  <IonCol>{sub.studentName}</IonCol>
-                  <IonCol>{sub.taskName}</IonCol>
-                  <IonCol
-                    color={
-                      sub.status === "Submitted"
-                        ? "success"
-                        : sub.status === "Late"
-                        ? "warning"
-                        : "danger"
-                    }
-                  >
+                  <IonCol>{sub.student_name}</IonCol>
+                  <IonCol>{sub.task_name}</IonCol>
+                  <IonCol color={
+                    sub.status === "Submitted"
+                      ? "success"
+                      : sub.status === "Late"
+                      ? "warning"
+                      : "danger"
+                  }>
                     {sub.status}
                   </IonCol>
-                  <IonCol>{sub.timeTaken}</IonCol>
+                  <IonCol>{sub.time_taken}</IonCol>
                   <IonCol>
-                    {sub.mediaUrl ? (
-                      <a href={sub.mediaUrl} target="_blank" rel="noopener noreferrer">
+                    {sub.media_url ? (
+                      <a href={sub.media_url} target="_blank" rel="noopener noreferrer">
                         View
                       </a>
                     ) : (
