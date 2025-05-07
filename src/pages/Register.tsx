@@ -9,7 +9,10 @@ import {
   IonTitle,
   IonToolbar,
   useIonRouter,
-  IonToast, // Import IonToast
+  IonToast,
+  IonRadio,
+  IonRadioGroup,
+  IonItemDivider,
 } from "@ionic/react";
 import { useState } from "react";
 
@@ -19,32 +22,42 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showToast, setShowToast] = useState(false); // State to control the toast visibility
+  const [userType, setUserType] = useState(""); // admin or student
+  const [showToast, setShowToast] = useState(false);
 
   const doRegister = () => {
-    // Basic validation for password match
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
+    if (!username || !email || !password || !confirmPassword || !userType) {
+      alert("Please fill in all fields and select user type.");
       return;
     }
 
-    // Show the toast after successful registration
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // Check if user already exists
+    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const emailExists = existingUsers.some((user: any) => user.email === email);
+    if (emailExists) {
+      alert("Email is already registered. Redirecting to login...");
+      navigation.push("/CrimpTask", "forward", "replace");
+      return;
+    }
+
+    // Register user
+    const newUser = { username, email, password, userType };
+    existingUsers.push(newUser);
+    localStorage.setItem("users", JSON.stringify(existingUsers));
+
     setShowToast(true);
-
-    // Log the user information (you can replace this with actual registration logic)
-    console.log("Register button clicked");
-    console.log("Username:", username);
-    console.log("Email:", email);
-    console.log("Password:", password);
-
-    // After successful registration, navigate to the login page (or home page)
     setTimeout(() => {
-      navigation.push("/CrimpTask", "forward", "replace"); // Navigate to login page
-    }, 2000); // 2-second delay to show the toast
+      navigation.push("/CrimpTask", "forward", "replace");
+    }, 2000);
   };
 
   const navigateToLogin = () => {
-    navigation.push("/CrimpTask"); // Navigate back to Login page
+    navigation.push("/CrimpTask");
   };
 
   return (
@@ -93,19 +106,29 @@ const Register: React.FC = () => {
           />
         </IonItem>
 
-        <IonButton onClick={doRegister} expand="full">
-          Register
-        </IonButton>
+        <IonItemDivider>
+          <IonLabel>User Type</IonLabel>
+        </IonItemDivider>
+        <IonRadioGroup value={userType} onIonChange={(e) => setUserType(e.detail.value!)}>
+          <IonItem>
+            <IonLabel>Student</IonLabel>
+            <IonRadio slot="start" value="student" />
+          </IonItem>
+          <IonItem>
+            <IonLabel>Admin</IonLabel>
+            <IonRadio slot="start" value="admin" />
+          </IonItem>
+        </IonRadioGroup>
 
-        {/* IonToast component to show the success message */}
+        <IonButton onClick={doRegister} expand="full">Register</IonButton>
+
         <IonToast
           isOpen={showToast}
           message="Account Created Successfully!"
-          duration={2000} // Show for 2 seconds
-          onDidDismiss={() => setShowToast(false)} // Hide toast after it is dismissed
+          duration={2000}
+          onDidDismiss={() => setShowToast(false)}
         />
 
-        {/* Button to navigate to Login page */}
         <IonButton onClick={navigateToLogin} expand="full" color="secondary">
           Already have an account? Login
         </IonButton>

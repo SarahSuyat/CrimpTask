@@ -37,7 +37,7 @@ import Login from './pages/Login';
 import Menu from './pages/Menu';
 import Register from './pages/Register';
 import TaskDetailPage from './pages/TaskDetailPage';
-
+import AdminDashboard from './pages/admin/AdminDashboard';
 setupIonicReact();
 
 const App: React.FC = () => (
@@ -48,7 +48,7 @@ const App: React.FC = () => (
         <Route path="/CrimpTask/app" component={Menu} />
         <Route exact path="/register" component={Register} />
         <Route path="/task/:id" component={TaskDetailPage} exact />
-
+        <Route path="/CrimpTask/admin" component={AdminDashboard} />
 
           
       </IonRouterOutlet>
