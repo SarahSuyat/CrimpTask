@@ -11,6 +11,7 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonModal,
   IonPage,
   IonRow,
   IonSelect,
@@ -27,7 +28,6 @@ interface Task {
   id: number;
   title: string;
   description: string;
-  type: string;
   difficulty: string;
   dueDate: string;
   timeLimit: string;
@@ -41,12 +41,14 @@ const TaskManagement: React.FC = () => {
     id: Date.now(),
     title: "",
     description: "",
-    type: "",
     difficulty: "",
     dueDate: "",
     timeLimit: "",
     allowSubmission: true,
   });
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -62,12 +64,19 @@ const TaskManagement: React.FC = () => {
   };
 
   const handleAddTask = () => {
-    setTaskList([...taskList, { ...formData, id: Date.now() }]);
+    const existing = taskList.find((t) => t.id === formData.id);
+    if (existing) {
+      setTaskList(
+        taskList.map((t) => (t.id === formData.id ? { ...formData } : t))
+      );
+    } else {
+      setTaskList([...taskList, { ...formData, id: Date.now() }]);
+    }
+
     setFormData({
       id: Date.now(),
       title: "",
       description: "",
-      type: "",
       difficulty: "",
       dueDate: "",
       timeLimit: "",
@@ -79,6 +88,15 @@ const TaskManagement: React.FC = () => {
     setTaskList(taskList.filter((task) => task.id !== id));
   };
 
+  const handleEdit = (task: Task) => {
+    setFormData(task);
+  };
+
+  const handleView = (task: Task) => {
+    setSelectedTask(task);
+    setShowModal(true);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -88,10 +106,11 @@ const TaskManagement: React.FC = () => {
       </IonHeader>
 
       <IonContent className="ion-padding">
+        {/* Form to Create or Edit Task */}
         <IonCard>
           <IonCardContent>
             <IonText color="primary">
-              <h2>Create New Task</h2>
+              <h2>{taskList.find((t) => t.id === formData.id) ? "Edit Task" : "Create New Task"}</h2>
             </IonText>
             <IonGrid>
               <IonRow>
@@ -103,17 +122,6 @@ const TaskManagement: React.FC = () => {
                       value={formData.title}
                       onIonChange={handleInputChange}
                       required
-                    />
-                  </IonItem>
-                </IonCol>
-
-                <IonCol size="12" size-md="6">
-                  <IonItem>
-                    <IonLabel position="floating">Task Type</IonLabel>
-                    <IonInput
-                      name="type"
-                      value={formData.type}
-                      onIonChange={handleInputChange}
                     />
                   </IonItem>
                 </IonCol>
@@ -180,7 +188,7 @@ const TaskManagement: React.FC = () => {
 
                 <IonCol size="12">
                   <IonItem>
-                    <IonLabel>Attach Instructions / Reference Media</IonLabel>
+                    <IonLabel>Attach File</IonLabel>
                     <input
                       type="file"
                       accept="image/*,video/*,application/pdf"
@@ -190,14 +198,16 @@ const TaskManagement: React.FC = () => {
                 </IonCol>
 
                 <IonCol size="12" className="ion-text-end">
-                  <IonButton onClick={handleAddTask}>Create Task</IonButton>
+                  <IonButton onClick={handleAddTask}>
+                    {taskList.find((t) => t.id === formData.id) ? "Update Task" : "Create Task"}
+                  </IonButton>
                 </IonCol>
               </IonRow>
             </IonGrid>
           </IonCardContent>
         </IonCard>
 
-        {/* List of tasks */}
+        {/* Existing Task List */}
         <IonCard>
           <IonCardContent>
             <IonText color="primary">
@@ -205,24 +215,15 @@ const TaskManagement: React.FC = () => {
             </IonText>
             <IonList>
               {taskList.map((task) => (
-                <IonItem key={task.id}>
+                <IonItem key={task.id} button onClick={() => handleView(task)}>
                   <IonLabel>
                     <h2>{task.title}</h2>
                     <p>{task.description}</p>
                   </IonLabel>
-                  <IonButton slot="end" fill="outline" size="small" color="primary">
-                    View
-                  </IonButton>
-                  <IonButton slot="end" fill="outline" size="small" color="warning">
+                  <IonButton slot="end" size="small" color="warning" onClick={(e) => { e.stopPropagation(); handleEdit(task); }}>
                     Edit
                   </IonButton>
-                  <IonButton
-                    slot="end"
-                    fill="outline"
-                    size="small"
-                    color="danger"
-                    onClick={() => handleDelete(task.id)}
-                  >
+                  <IonButton slot="end" size="small" color="danger" onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }}>
                     Delete
                   </IonButton>
                 </IonItem>
@@ -230,6 +231,29 @@ const TaskManagement: React.FC = () => {
             </IonList>
           </IonCardContent>
         </IonCard>
+
+        {/* Modal to View Task Details */}
+        <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Task Details</IonTitle>
+              <IonButton slot="end" onClick={() => setShowModal(false)}>Close</IonButton>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="ion-padding">
+            {selectedTask && (
+              <div>
+                <h2>{selectedTask.title}</h2>
+                <p><strong>Description:</strong> {selectedTask.description}</p>
+                <p><strong>Difficulty:</strong> {selectedTask.difficulty}</p>
+                <p><strong>Due Date:</strong> {selectedTask.dueDate}</p>
+                <p><strong>Time Limit:</strong> {selectedTask.timeLimit} minutes</p>
+                <p><strong>Allow Submission:</strong> {selectedTask.allowSubmission ? "Yes" : "No"}</p>
+                {selectedTask.attachment && <p><strong>Attachment:</strong> {selectedTask.attachment.name}</p>}
+              </div>
+            )}
+          </IonContent>
+        </IonModal>
       </IonContent>
     </IonPage>
   );

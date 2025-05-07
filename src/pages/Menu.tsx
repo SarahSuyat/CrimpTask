@@ -24,8 +24,6 @@ import {
 
 import { Redirect, Route } from 'react-router-dom';
 import TaskList from './TaskList';
-import MyProgress from './MyProgress';
-import Feedback from './Feedback';
 import Profile from './Profile';
 import Home from './Home';
 
@@ -33,8 +31,6 @@ const Menu: React.FC = () => {
   const menuItems = [
     { name: 'Home', url: '/CrimpTask/app/home', icon: homeOutline },
     { name: 'Task List', url: '/CrimpTask/app/task-list', icon: listOutline },
-    { name: 'My Progress', url: '/CrimpTask/app/my-progress', icon: barChartOutline },
-    { name: 'Feedback', url: '/CrimpTask/app/feedback', icon: chatboxEllipsesOutline },
     { name: 'Profile / Logout', url: '/CrimpTask/app/profile', icon: personOutline },
   ];
 
@@ -74,8 +70,6 @@ const Menu: React.FC = () => {
         <IonRouterOutlet id="main">
         <Route exact path="/CrimpTask/app/home" component={Home} />
           <Route exact path="/CrimpTask/app/task-list" component={TaskList} />
-          <Route exact path="/CrimpTask/app/my-progress" component={MyProgress} />
-          <Route exact path="/CrimpTask/app/feedback" component={Feedback} />
           <Route exact path="/CrimpTask/app/profile" component={Profile} />
           <Route exact path="/CrimpTask/app">
             <Redirect to="/CrimpTask/app/home" />

@@ -1,13 +1,10 @@
 import {
-  IonButton,
   IonCard,
   IonCardContent,
   IonCol,
   IonContent,
   IonGrid,
   IonHeader,
-  IonItem,
-  IonLabel,
   IonPage,
   IonRow,
   IonText,
@@ -24,7 +21,6 @@ interface Submission {
   status: "Submitted" | "Not Submitted" | "Late";
   timeTaken: string;
   mediaUrl?: string;
-  grade?: string;
 }
 
 const submissions: Submission[] = [
@@ -35,7 +31,6 @@ const submissions: Submission[] = [
     status: "Submitted",
     timeTaken: "25 mins",
     mediaUrl: "https://via.placeholder.com/150",
-    grade: "A",
   },
   {
     id: 2,
@@ -44,7 +39,6 @@ const submissions: Submission[] = [
     status: "Late",
     timeTaken: "40 mins",
     mediaUrl: "https://via.placeholder.com/150",
-    grade: "B",
   },
   {
     id: 3,
@@ -77,8 +71,6 @@ const StudentSubmissions: React.FC = () => {
                 <IonCol>Status</IonCol>
                 <IonCol>Time Taken</IonCol>
                 <IonCol>Media</IonCol>
-                <IonCol>Grade</IonCol>
-                <IonCol>Actions</IonCol>
               </IonRow>
 
               {submissions.map((sub) => (
@@ -105,15 +97,6 @@ const StudentSubmissions: React.FC = () => {
                     ) : (
                       "-"
                     )}
-                  </IonCol>
-                  <IonCol>{sub.grade || "-"}</IonCol>
-                  <IonCol>
-                    <IonButton size="small" fill="outline" color="primary">
-                      View
-                    </IonButton>
-                    <IonButton size="small" fill="outline" color="success">
-                      Give Feedback
-                    </IonButton>
                   </IonCol>
                 </IonRow>
               ))}

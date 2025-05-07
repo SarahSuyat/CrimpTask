@@ -26,10 +26,8 @@ import {
   import { Redirect, Route } from "react-router-dom";
 import DashboardHome from "./DashboardHome";
 import TaskManagement from "./TaskManagement";
-import ProgressAnalytics from "./ProgressAnalytics";
 import StudentSubmissions from "./StudentSubmissions";
 import AdminProfile from "./AdminProfile";
-import FeedbackReports from "./FeedbackReports";
   
  
   
@@ -39,8 +37,6 @@ import FeedbackReports from "./FeedbackReports";
       { name: "Dashboard Home", url: "/CrimpTask/admin/home", icon: homeOutline },
       { name: "Task Management", url: "/CrimpTask/admin/task-management", icon: listOutline },
       { name: "Student Submissions", url: "/CrimpTask/admin/student-submissions", icon: peopleOutline },
-      { name: "Progress & Analytics", url: "/CrimpTask/admin/progress-analytics", icon: barChartOutline },
-      { name: "Feedback & Reports", url: "/CrimpTask/admin/feedback-reports", icon: chatboxOutline },
       { name: "Profile / Logout", url: "/CrimpTask/admin/profile", icon: personOutline },
     ];
   
@@ -78,8 +74,6 @@ import FeedbackReports from "./FeedbackReports";
             <Route exact path="/CrimpTask/admin/home" component={DashboardHome} />
             <Route exact path="/CrimpTask/admin/task-management" component={TaskManagement} />
             <Route exact path="/CrimpTask/admin/student-submissions" component={StudentSubmissions} />
-            <Route exact path="/CrimpTask/admin/progress-analytics" component={ProgressAnalytics} />
-            <Route exact path="/CrimpTask/admin/feedback-reports" component={FeedbackReports} />
             <Route exact path="/CrimpTask/admin/profile" component={AdminProfile} />
             <Route exact path="/CrimpTask/admin">
               <Redirect to="/CrimpTask/admin/home" />

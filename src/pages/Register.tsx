@@ -121,6 +121,7 @@ const Register: React.FC = () => {
         </IonRadioGroup>
 
         <IonButton onClick={doRegister} expand="full">Register</IonButton>
+        
 
         <IonToast
           isOpen={showToast}
