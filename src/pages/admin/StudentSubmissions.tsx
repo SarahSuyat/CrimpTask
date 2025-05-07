@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabaseClient";
 
-// Updated interface for nested relations
+// Interface for the nested relations
 interface Submission {
   id: number;
   status: "Submitted" | "Not Submitted" | "Late";
@@ -42,20 +42,23 @@ const StudentSubmissions: React.FC = () => {
           status,
           time_taken,
           media_url,
+          tasks (
+            title
+          ),
+          user_id,
           profiles (
             full_name,
             username
-          ),
-          tasks (
-            title,
-            name
           )
         `)
-        .order("id", { ascending: true });
+        .order("id", { ascending: true })
+        .eq('submissions.evaluated', true) // Optionally check if submission is evaluated
+        .leftJoin('profiles', 'submissions.user_id', 'profiles.user_id') // Join with profiles
+        .leftJoin('tasks', 'submissions.task_id', 'tasks.id'); // Join with tasks
 
       if (error) {
         console.error("Error fetching submissions:", error.message);
-        setSubmissions([]);
+        setSubmissions([]); // Reset on error
         return;
       }
 
@@ -65,15 +68,15 @@ const StudentSubmissions: React.FC = () => {
         status: item.status,
         time_taken: item.time_taken,
         media_url: item.media_url,
-        user: item.profiles || {},
-        task: item.tasks || {},
+        user: item.profiles || {}, // Safely access profiles
+        task: item.tasks || {}, // Safely access tasks
       }));
 
       setSubmissions(formatted);
     };
 
     fetchSubmissions();
-  }, []);
+  }, []); // Empty dependency array to fetch data only once
 
   return (
     <IonPage>
@@ -100,21 +103,29 @@ const StudentSubmissions: React.FC = () => {
 
               {submissions.map((sub) => (
                 <IonRow key={sub.id}>
-                  <IonCol>{sub.user.full_name || sub.user.username || "Unknown"}</IonCol>
-                  <IonCol>{sub.task.title || sub.task.name || "Untitled Task"}</IonCol>
-                  <IonCol color={
-                    sub.status === "Submitted"
-                      ? "success"
-                      : sub.status === "Late"
-                      ? "warning"
-                      : "danger"
-                  }>
+                  <IonCol>
+                    {sub.user.full_name || sub.user.username || "Unknown"}
+                  </IonCol>
+                  <IonCol>{sub.task.title || "Untitled Task"}</IonCol>
+                  <IonCol
+                    color={
+                      sub.status === "Submitted"
+                        ? "success"
+                        : sub.status === "Late"
+                        ? "warning"
+                        : "danger"
+                    }
+                  >
                     {sub.status}
                   </IonCol>
                   <IonCol>{sub.time_taken || "-"}</IonCol>
                   <IonCol>
                     {sub.media_url ? (
-                      <a href={sub.media_url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={sub.media_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         View
                       </a>
                     ) : (
