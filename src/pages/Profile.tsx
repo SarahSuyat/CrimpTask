@@ -12,41 +12,51 @@ import {
     IonButton,
     useIonRouter
   } from '@ionic/react';
-  
-  const Profile: React.FC = () => {
-    const router = useIonRouter();
-  
-    const handleLogout = () => {
-      // Clear session if stored, then redirect
-      // Example: localStorage.removeItem("user");
-      router.push("/CrimpTask", "back", "replace");
+import { useEffect, useState } from 'react';
+import { supabase } from '../utils/supabaseClient';
+
+const Profile: React.FC = () => {
+  const router = useIonRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     };
-  
-    return (
-      <IonPage>
-        <IonHeader>
-          <IonToolbar>
-            <IonButtons slot="start">
-              <IonMenuButton />
-            </IonButtons>
-            <IonTitle>Profile</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <IonItem>
-            <IonLabel>
-              <h2>Student Name</h2>
-              <p>student@example.com</p>
-            </IonLabel>
-          </IonItem>
-  
-          <IonButton expand="full" color="danger" onClick={handleLogout}>
-            Logout
-          </IonButton>
-        </IonContent>
-      </IonPage>
-    );
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/CrimpTask", "back", "replace");
   };
-  
-  export default Profile;
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle>Profile</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent className="ion-padding">
+        <IonItem>
+          <IonLabel>
+            <h2>{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}</h2>
+            <p>{user?.email || 'No email available'}</p>
+          </IonLabel>
+        </IonItem>
+
+        <IonButton expand="full" color="danger" onClick={handleLogout}>
+          Logout
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Profile;
   
