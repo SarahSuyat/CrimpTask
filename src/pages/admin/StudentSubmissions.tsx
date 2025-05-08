@@ -10,7 +10,15 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonChip,
+  IonIcon,
 } from "@ionic/react";
+import { timeOutline, documentTextOutline, checkmarkCircleOutline, alertCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabaseClient";
 
@@ -46,7 +54,6 @@ const StudentSubmissions: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch submissions with user_id and task_id
         const { data: submissionsData, error: submissionsError } = await supabase
           .from("submissions")
           .select("*, user_id, task_id")
@@ -61,11 +68,9 @@ const StudentSubmissions: React.FC = () => {
           return;
         }
 
-        // Get unique IDs for related data
         const taskIds = [...new Set(submissionsData.map(s => s.task_id))];
         const userIds = [...new Set(submissionsData.map(s => s.user_id))];
 
-        // Fetch related data in parallel
         const [tasksResponse, usersResponse] = await Promise.all([
           supabase
             .from("tasks")
@@ -80,11 +85,9 @@ const StudentSubmissions: React.FC = () => {
         if (tasksResponse.error) throw tasksResponse.error;
         if (usersResponse.error) throw usersResponse.error;
 
-        // Create lookup maps
         const tasksMap = new Map(tasksResponse.data?.map(task => [task.id, task]) || []);
         const usersMap = new Map(usersResponse.data?.map(user => [user.id, user]) || []);
 
-        // Format the data
         const formattedSubmissions = submissionsData.map(sub => ({
           ...sub,
           task: tasksMap.get(sub.task_id) || { id: sub.task_id, title: 'Unknown Task' },
@@ -103,86 +106,100 @@ const StudentSubmissions: React.FC = () => {
     fetchSubmissions();
   }, []);
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "success";
+      case "Submitted":
+        return "primary";
+      case "Late":
+        return "warning";
+      default:
+        return "danger";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return checkmarkCircleOutline;
+      case "Submitted":
+        return documentTextOutline;
+      case "Late":
+        return alertCircleOutline;
+      default:
+        return closeCircleOutline;
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
           <IonTitle>Student Submissions</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent className="ion-padding">
-        <IonCard>
+        <IonCard style={{ marginBottom: '24px' }}>
           <IonCardContent>
             <IonText color="primary">
-              <h2>Submissions Table</h2>
+              <h2 style={{ marginBottom: '24px', fontSize: '1.5rem' }}>Submissions</h2>
             </IonText>
             
             {loading && <IonText>Loading submissions...</IonText>}
             {error && <IonText color="danger">{error}</IonText>}
 
             {!loading && !error && (
-              <IonGrid>
-                <IonRow className="ion-text-bold">
-                  <IonCol>Student</IonCol>
-                  <IonCol>Task</IonCol>
-                  <IonCol>Status</IonCol>
-                  <IonCol>Submitted At</IonCol>
-                  <IonCol>Time Taken</IonCol>
-                  <IonCol>Media</IonCol>
-                  <IonCol>Evaluated</IonCol>
-                </IonRow>
-
+              <IonList style={{ padding: '0' }}>
                 {submissions.length === 0 ? (
-                  <IonRow>
-                    <IonCol>No submissions found</IonCol>
-                  </IonRow>
+                  <IonItem>
+                    <IonLabel>No submissions found</IonLabel>
+                  </IonItem>
                 ) : (
                   submissions.map((sub) => (
-                    <IonRow key={sub.id}>
-                      <IonCol>
-                        {sub.user.username || sub.user.email || "Unknown"}
-                      </IonCol>
-                      <IonCol>
-                        {sub.task.title || `Task #${sub.task.id}`}
-                      </IonCol>
-                      <IonCol
-                        color={
-                          sub.status === "Completed"
-                            ? "success"
-                            : sub.status === "Submitted"
-                            ? "primary"
-                            : sub.status === "Late"
-                            ? "warning"
-                            : "danger"
-                        }
-                      >
-                        {sub.status}
-                      </IonCol>
-                      <IonCol>
-                        {new Date(sub.submitted_at).toLocaleString()}
-                      </IonCol>
-                      <IonCol>{sub.time_taken || "-"}</IonCol>
-                      <IonCol>
-                        {sub.media_url ? (
-                          <a
-                            href={sub.media_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </IonCol>
-                      <IonCol>
-                        {sub.evaluated ? "✅" : "⏳"}
-                      </IonCol>
-                    </IonRow>
+                    <IonItem key={sub.id} style={{ 
+                      '--padding-start': '0',
+                      '--inner-padding-end': '0',
+                      marginBottom: '16px',
+                      '--background': 'transparent'
+                    }}>
+                      <IonLabel style={{ paddingLeft: '12px' }}>
+                        <h2 style={{ marginBottom: '8px', fontWeight: '500' }}>
+                          {sub.user.username || sub.user.email || "Unknown"}
+                        </h2>
+                        <p style={{ marginBottom: '8px', color: '#666' }}>
+                          {sub.task.title || `Task #${sub.task.id}`}
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <IonChip color={getStatusColor(sub.status)}>
+                            <IonIcon icon={getStatusIcon(sub.status)} />
+                            <IonLabel>{sub.status}</IonLabel>
+                          </IonChip>
+                          <IonChip color="medium">
+                            <IonIcon icon={timeOutline} />
+                            <IonLabel>{sub.time_taken || "-"}</IonLabel>
+                          </IonChip>
+                          {sub.media_url && (
+                            <IonChip color="primary" onClick={() => window.open(sub.media_url, '_blank')}>
+                              <IonLabel>View Media</IonLabel>
+                            </IonChip>
+                          )}
+                          <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                            {new Date(sub.submitted_at).toLocaleString()}
+                          </span>
+                          <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                            {sub.evaluated ? "✅ Evaluated" : "⏳ Pending"}
+                          </span>
+                        </div>
+                      </IonLabel>
+                    </IonItem>
                   ))
                 )}
-              </IonGrid>
+              </IonList>
             )}
           </IonCardContent>
         </IonCard>
