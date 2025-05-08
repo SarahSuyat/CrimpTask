@@ -21,10 +21,10 @@ const Home: React.FC = () => {
   const [summaryData, setSummaryData] = useState([
     { title: 'Tasks Assigned', count: 0, icon: '📦', color: '#3b82f6' },
     { title: 'Tasks Completed', count: 0, icon: '✅', color: '#10b981' },
-    { title: 'Pending / Late', count: 0, icon: '⚠️', color: '#f59e0b' },
+    { title: 'Pending', count: 0, icon: '⚠️', color: '#f59e0b' },
   ]);
 
-  useIonViewWillEnter(async () => {
+  const fetchData = async () => {
     const {
       data: { user },
       error: userError,
@@ -50,7 +50,17 @@ const Home: React.FC = () => {
       setStudentName(profile?.full_name || 'Student');
     }
 
-    // Fetch task submission data for the user
+    // Fetch total tasks assigned (from tasks table)
+    const { count: totalTasks, error: tasksError } = await supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true });
+
+    if (tasksError) {
+      console.error("Error fetching tasks:", tasksError);
+      return;
+    }
+
+    // Fetch user's submissions
     const { data: submissions, error: submissionsError } = await supabase
       .from('submissions')
       .select('status')
@@ -61,15 +71,20 @@ const Home: React.FC = () => {
       return;
     }
 
-    const assigned = submissions?.length || 0;
-    const completed = submissions?.filter((s) => s.status === 'Submitted').length || 0;
+    // Calculate statistics
+    const assigned = totalTasks || 0;
+    const completed = submissions?.filter(s => s.status === 'Completed').length || 0;
     const pending = assigned - completed;
 
     setSummaryData([
       { title: 'Tasks Assigned', count: assigned, icon: '📦', color: '#3b82f6' },
       { title: 'Tasks Completed', count: completed, icon: '✅', color: '#10b981' },
-      { title: 'Pending / Late', count: pending, icon: '⚠️', color: '#f59e0b' },
+      { title: 'Pending', count: pending, icon: '⚠️', color: '#f59e0b' },
     ]);
+  };
+
+  useIonViewWillEnter(() => {
+    fetchData();
   });
 
   return (
