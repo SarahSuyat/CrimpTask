@@ -30,17 +30,53 @@ interface Task {
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  useIonViewWillEnter(async () => {
-    const { data, error } = await supabase
+  const fetchTasks = async () => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('Error getting user:', userError);
+      return;
+    }
+
+    const userId = user.id;
+
+    // First get all tasks
+    const { data: tasksData, error: tasksError } = await supabase
       .from('tasks')
       .select('*')
       .order('due_date', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching tasks:', error);
-    } else {
-      setTasks(data || []);
+    if (tasksError) {
+      console.error('Error fetching tasks:', tasksError);
+      return;
     }
+
+    // Then get all submissions for this user
+    const { data: submissionsData, error: submissionsError } = await supabase
+      .from('submissions')
+      .select('task_id, status')
+      .eq('user_id', userId);
+
+    if (submissionsError) {
+      console.error('Error fetching submissions:', submissionsError);
+      return;
+    }
+
+    // Create a map of task_id to submission status
+    const submissionMap = new Map(
+      submissionsData?.map(sub => [sub.task_id, sub.status]) || []
+    );
+
+    // Combine task data with submission status
+    const tasksWithStatus = tasksData?.map(task => ({
+      ...task,
+      status: submissionMap.get(task.id) || 'Not Started'
+    })) || [];
+
+    setTasks(tasksWithStatus);
+  };
+
+  useIonViewWillEnter(() => {
+    fetchTasks();
   });
 
   const statusColor = (status: string) => {
@@ -87,10 +123,16 @@ const TaskList: React.FC = () => {
                     📈 {task.difficulty}
                   </IonCol>
                   <IonCol size="12" sizeMd="2">
-                    <IonButton color="primary" size="small" routerLink={`/task/${task.id}`}>
-                      🧾 View Task
-                    </IonButton>
-                    {task.allow_upload && (
+                    {task.status === 'Completed' ? (
+                      <IonButton color="success" size="small" disabled>
+                        ✅ Done
+                      </IonButton>
+                    ) : (
+                      <IonButton color="primary" size="small" routerLink={`/task/${task.id}`}>
+                        🧾 View Task
+                      </IonButton>
+                    )}
+                    {task.allow_upload && task.status !== 'Completed' && (
                       <IonButton color="secondary" size="small" className="ion-margin-start">
                         📤 Upload
                       </IonButton>

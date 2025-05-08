@@ -20,7 +20,7 @@ import { supabase } from '../utils/supabaseClient';
 
 const TaskDetailPage: React.FC = () => {
   const [timerStarted, setTimerStarted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+  const [timeLeft, setTimeLeft] = useState(0); // Will be set from task data
   const [showWarning, setShowWarning] = useState(false);
   const [isLate, setIsLate] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -30,9 +30,31 @@ const TaskDetailPage: React.FC = () => {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [taskData, setTaskData] = useState<any>(null);
+  const [isMarkedDone, setIsMarkedDone] = useState(false);
 
-  // Hardcoded task ID for now — replace with dynamic value
-  const taskId = 1;
+  // Get task ID from URL
+  const taskId = window.location.pathname.split('/').pop();
+
+  useEffect(() => {
+    const fetchTaskData = async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('id', taskId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching task:', error);
+      } else {
+        setTaskData(data);
+        // Convert time_limit from minutes to seconds
+        setTimeLeft(parseInt(data.time_limit) * 60);
+      }
+    };
+
+    fetchTaskData();
+  }, [taskId]);
 
   useEffect(() => {
     let interval: any;
@@ -48,11 +70,11 @@ const TaskDetailPage: React.FC = () => {
       clearInterval(interval);
       setIsLate(true);
       setTaskFinished(true);
-      setTimeConsumed(600);
+      setTimeConsumed(taskData ? parseInt(taskData.time_limit) * 60 : 0);
     }
 
     return () => clearInterval(interval);
-  }, [timerStarted, timeLeft]);
+  }, [timerStarted, timeLeft, taskData]);
 
   const formatInterval = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -63,7 +85,7 @@ const TaskDetailPage: React.FC = () => {
   const handleFinishTask = () => {
     setTaskFinished(true);
     setTimerStarted(false);
-    setTimeConsumed(600 - timeLeft);
+    setTimeConsumed(taskData ? (parseInt(taskData.time_limit) * 60) - timeLeft : 0);
   };
 
   const handleSubmit = async () => {
@@ -134,19 +156,43 @@ const TaskDetailPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const handleMarkAsDone = async () => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      alert('❌ User not authenticated.');
+      return;
+    }
+
+    const userId = userData.user.id;
+
+    const { error: updateError } = await supabase
+      .from('submissions')
+      .update({ status: 'Completed' })
+      .eq('user_id', userId)
+      .eq('task_id', taskId);
+
+    if (updateError) {
+      console.error('Update error:', updateError.message);
+      alert('❌ Failed to mark task as done: ' + updateError.message);
+    } else {
+      setIsMarkedDone(true);
+      alert('✅ Task marked as done successfully!');
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>📝 Task Title: Sample Task</IonTitle>
+          <IonTitle>📝 Task Title: {taskData?.title || 'Loading...'}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
         <IonCard>
           <IonCardContent>
-            <IonText><strong>Instructions:</strong> Complete the task within the allotted time.</IonText>
+            <IonText><strong>Instructions:</strong> {taskData?.description || 'Loading...'}</IonText>
             <br />
-            <IonText color="medium">👨‍🏫 Instructor Notes: Read all questions carefully before answering.</IonText>
+            <IonText color="medium">👨‍🏫 Time Limit: {taskData?.time_limit || 'Loading...'} minutes</IonText>
           </IonCardContent>
         </IonCard>
 
@@ -213,6 +259,21 @@ const TaskDetailPage: React.FC = () => {
               <IonButton expand="block" color="medium" onClick={handleDownloadReport}>
                 📥 Download Task Report
               </IonButton>
+              {!isMarkedDone && (
+                <IonButton 
+                  expand="block" 
+                  color="success" 
+                  className="ion-margin-top"
+                  onClick={handleMarkAsDone}
+                >
+                  ✅ Mark Task as Done
+                </IonButton>
+              )}
+              {isMarkedDone && (
+                <IonText color="success" className="ion-text-center ion-margin-top">
+                  <p>✅ Task marked as completed!</p>
+                </IonText>
+              )}
             </IonCardContent>
           </IonCard>
         )}
