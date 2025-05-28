@@ -319,11 +319,26 @@ const Login: React.FC = () => {
             style={{ 
               '--background': '#e83e8c',
               '--background-hover': '#d63384',
-              marginBottom: '1rem'
+              marginBottom: '0.5rem'
             }}
             disabled={isCooldownActive}
           >
             Login
+          </IonButton>
+
+          <IonButton 
+            onClick={() => setShowForgotPasswordAlert(true)} 
+            expand="full"
+            fill="clear"
+            style={{ 
+              '--color': '#4285F4',
+              fontSize: '0.8rem',
+              marginBottom: '1rem',
+              height: '2rem'
+            }}
+            disabled={isCooldownActive}
+          >
+            Forgot Password?
           </IonButton>
 
           <IonButton 
@@ -362,19 +377,6 @@ const Login: React.FC = () => {
             disabled={isCooldownActive}
           >
             Don't have an account? Register
-          </IonButton>
-
-          <IonButton 
-            onClick={() => setShowForgotPasswordAlert(true)} 
-            expand="full"
-            fill="clear"
-            style={{ 
-              '--color': '#e83e8c',
-              fontSize: '0.9rem'
-            }}
-            disabled={isCooldownActive}
-          >
-            Forgot Password?
           </IonButton>
 
           <IonToast isOpen={showToast} message={toastMessage} duration={2000} onDidDismiss={() => setShowToast(false)} />
