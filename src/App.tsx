@@ -22,6 +22,7 @@ import Register from './pages/Register';
 import TaskDetailPage from './pages/TaskDetailPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AuthCallback from './pages/AuthCallback';
+import IncidentReport from './pages/IncidentReport';
 
 setupIonicReact();
 
@@ -57,6 +58,7 @@ const App: React.FC = () => {
           <Route path="/task/:id" component={TaskDetailPage} exact />
           <Route path="/CrimpTask/admin" component={AdminDashboard} />
           <Route path="/CrimpTask/auth-callback" component={AuthCallback} />
+          <Route path="/CrimpTask/incidents" component={IncidentReport} />
           <Redirect exact from="/" to="/CrimpTask" />
         </IonRouterOutlet>
       </IonReactRouter>

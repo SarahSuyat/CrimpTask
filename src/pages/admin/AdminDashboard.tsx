@@ -19,6 +19,7 @@ import {
     peopleOutline,
     personOutline,
     logOutOutline,
+    warningOutline,
   } from "ionicons/icons";
   
   import { Redirect, Route } from "react-router-dom";
@@ -26,6 +27,7 @@ import DashboardHome from "./DashboardHome";
 import TaskManagement from "./TaskManagement";
 import StudentSubmissions from "./StudentSubmissions";
 import AdminProfile from "./AdminProfile";
+import IncidentReport from "../IncidentReport";
   
  
   
@@ -35,6 +37,7 @@ import AdminProfile from "./AdminProfile";
       { name: "Dashboard Home", url: "/CrimpTask/admin/home", icon: homeOutline },
       { name: "Task Management", url: "/CrimpTask/admin/task-management", icon: listOutline },
       { name: "Student Submissions", url: "/CrimpTask/admin/student-submissions", icon: peopleOutline },
+      { name: "Incident Reports", url: "/CrimpTask/admin/incidents", icon: warningOutline },
       { name: "Profile / Logout", url: "/CrimpTask/admin/profile", icon: personOutline },
     ];
   
@@ -73,6 +76,7 @@ import AdminProfile from "./AdminProfile";
             <Route exact path="/CrimpTask/admin/task-management" component={TaskManagement} />
             <Route exact path="/CrimpTask/admin/student-submissions" component={StudentSubmissions} />
             <Route exact path="/CrimpTask/admin/profile" component={AdminProfile} />
+            <Route exact path="/CrimpTask/admin/incidents" component={IncidentReport} />
             <Route exact path="/CrimpTask/admin">
               <Redirect to="/CrimpTask/admin/home" />
             </Route>

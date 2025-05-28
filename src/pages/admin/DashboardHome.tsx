@@ -8,15 +8,16 @@ import {
   IonIcon,
   IonPage,
   IonRow,
+  IonText,
   IonTitle,
   IonToolbar,
-  IonText,
 } from "@ionic/react";
 
 import {
   peopleOutline,
   documentTextOutline,
   cloudUploadOutline,
+  warningOutline,
 } from "ionicons/icons";
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ const DashboardHome: React.FC = () => {
   const [totalStudents, setTotalStudents] = useState<number>(0);
   const [totalTasks, setTotalTasks] = useState<number>(0);
   const [pendingSubmissions, setPendingSubmissions] = useState<number>(0);
+  const [pendingIncidents, setPendingIncidents] = useState<number>(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -52,6 +54,14 @@ const DashboardHome: React.FC = () => {
 
       if (submissionError) console.error("Error fetching submissions:", submissionError);
       setPendingSubmissions(pendingCount ?? 0);
+
+      const { count: incidentCount, error: incidentError } = await supabase
+        .from("incidents")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      if (incidentError) console.error("Error fetching incidents:", incidentError);
+      setPendingIncidents(incidentCount ?? 0);
     };
 
     fetchStats();
@@ -76,6 +86,12 @@ const DashboardHome: React.FC = () => {
       icon: cloudUploadOutline,
       color: "warning",
     },
+    {
+      title: "Pending Incidents",
+      count: pendingIncidents,
+      icon: warningOutline,
+      color: "danger",
+    },
   ];
 
   return (
@@ -90,7 +106,7 @@ const DashboardHome: React.FC = () => {
         <IonGrid>
           <IonRow>
             {summaryStats.map((stat, index) => (
-              <IonCol size="12" size-md="6" size-lg="4" key={index}>
+              <IonCol size="12" size-md="6" size-lg="3" key={index}>
                 <IonCard color={stat.color}>
                   <IonCardContent className="ion-text-center">
                     <IonIcon icon={stat.icon} style={{ fontSize: "40px" }} />
