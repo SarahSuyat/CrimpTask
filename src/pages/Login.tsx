@@ -32,28 +32,21 @@ const Login: React.FC = () => {
     }
 
     try {
-      // Sign in with Supabase auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) {
-        throw new Error("Login failed: " + authError.message);
-      }
+      if (authError) throw new Error("Login failed: " + authError.message);
 
-      // Retrieve the user from the 'users' table
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("user_type")
         .eq("user_email", email)
         .single();
 
-      if (userError || !userData) {
-        throw new Error("User record not found.");
-      }
+      if (userError || !userData) throw new Error("User record not found.");
 
-      // Redirect based on user type
       if (userData.user_type === "admin") {
         navigation.push("/CrimpTask/admin", "forward", "replace");
       } else {
@@ -61,6 +54,31 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       setAlertMessage(err instanceof Error ? err.message : "Unknown error occurred.");
+      setShowAlert(true);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/CrimpTask/app',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // The user will be redirected to Google's consent screen
+      // After successful authentication, they'll be redirected back to the app
+    } catch (err) {
+      setAlertMessage(err instanceof Error ? err.message : "Failed to sign in with Google");
       setShowAlert(true);
     }
   };
@@ -106,7 +124,7 @@ const Login: React.FC = () => {
             fontWeight: 'bold',
             fontStyle: 'italic'
           }}>Welcome Back</h2>
-          
+
           <IonItem style={{ 
             '--background': 'transparent', 
             marginBottom: '1rem',
@@ -130,7 +148,7 @@ const Login: React.FC = () => {
               }}
             />
           </IonItem>
-          
+
           <IonItem style={{ 
             '--background': 'transparent', 
             marginBottom: '2rem',
@@ -168,6 +186,19 @@ const Login: React.FC = () => {
           </IonButton>
 
           <IonButton 
+            expand="full" 
+            fill="outline" 
+            onClick={handleGoogleLogin}
+            style={{ 
+              '--color': '#e83e8c',
+              '--border-color': '#e83e8c',
+              marginBottom: '1rem'
+            }}
+          >
+            Sign in with Google
+          </IonButton>
+
+          <IonButton 
             onClick={goToRegister} 
             expand="full"
             fill="outline"
@@ -179,20 +210,8 @@ const Login: React.FC = () => {
             Don't have an account? Register
           </IonButton>
 
-          <IonToast
-            isOpen={showToast}
-            message={toastMessage}
-            duration={2000}
-            onDidDismiss={() => setShowToast(false)}
-          />
-
-          <IonAlert
-            isOpen={showAlert}
-            onDidDismiss={() => setShowAlert(false)}
-            header="Error"
-            message={alertMessage}
-            buttons={["OK"]}
-          />
+          <IonToast isOpen={showToast} message={toastMessage} duration={2000} onDidDismiss={() => setShowToast(false)} />
+          <IonAlert isOpen={showAlert} onDidDismiss={() => setShowAlert(false)} header="Error" message={alertMessage} buttons={["OK"]} />
         </div>
       </IonContent>
     </IonPage>

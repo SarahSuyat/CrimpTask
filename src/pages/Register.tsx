@@ -42,18 +42,12 @@ const Register: React.FC = () => {
         return;
       }
 
-      // Sign up in Supabase authentication
       const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw new Error("Account creation failed: " + error.message);
 
-      if (error) {
-        throw new Error("Account creation failed: " + error.message);
-      }
-
-      // Hash password before storing in the database
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Insert user data into 'users' table
       const { error: insertError } = await supabase.from("users").insert([
         {
           username,
@@ -63,17 +57,36 @@ const Register: React.FC = () => {
         },
       ]);
 
-      if (insertError) {
-        throw new Error("Failed to save user data: " + insertError.message);
-      }
+      if (insertError) throw new Error("Failed to save user data: " + insertError.message);
 
       setShowToast(true);
     } catch (err) {
-      if (err instanceof Error) {
-        setAlertMessage(err.message);
-      } else {
-        setAlertMessage("An unknown error occurred.");
+      setAlertMessage(err instanceof Error ? err.message : "An unknown error occurred.");
+      setShowAlert(true);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/CrimpTask/app',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
       }
+
+      // The user will be redirected to Google's consent screen
+      // After successful authentication, they'll be redirected back to the app
+    } catch (err) {
+      setAlertMessage(err instanceof Error ? err.message : "Failed to sign in with Google");
       setShowAlert(true);
     }
   };
@@ -85,7 +98,7 @@ const Register: React.FC = () => {
           <IonTitle>Register</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding" style={{ 
+      <IonContent className="ion-padding" style={{
         '--background': 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -106,8 +119,8 @@ const Register: React.FC = () => {
           margin: 'auto',
           position: 'relative'
         }}>
-          <h2 style={{ 
-            textAlign: 'center', 
+          <h2 style={{
+            textAlign: 'center',
             color: '#e83e8c',
             marginBottom: '2rem',
             fontSize: '1.8rem',
@@ -248,6 +261,19 @@ const Register: React.FC = () => {
           </IonButton>
 
           <IonButton 
+            expand="full" 
+            fill="outline" 
+            onClick={handleGoogleLogin}
+            style={{ 
+              '--color': '#e83e8c',
+              '--border-color': '#e83e8c',
+              marginBottom: '1rem'
+            }}
+          >
+            Sign up with Google
+          </IonButton>
+
+          <IonButton 
             routerLink="/CrimpTask" 
             expand="full"
             fill="outline"
@@ -259,20 +285,8 @@ const Register: React.FC = () => {
             Already have an account? Login
           </IonButton>
 
-          <IonToast
-            isOpen={showToast}
-            message="Account Created Successfully!"
-            duration={2000}
-            onDidDismiss={() => setShowToast(false)}
-          />
-
-          <IonAlert
-            isOpen={showAlert}
-            onDidDismiss={() => setShowAlert(false)}
-            header="Error"
-            message={alertMessage}
-            buttons={["OK"]}
-          />
+          <IonToast isOpen={showToast} message="Account Created Successfully!" duration={2000} onDidDismiss={() => setShowToast(false)} />
+          <IonAlert isOpen={showAlert} onDidDismiss={() => setShowAlert(false)} header="Error" message={alertMessage} buttons={["OK"]} />
         </div>
       </IonContent>
     </IonPage>
