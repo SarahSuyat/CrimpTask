@@ -96,7 +96,7 @@ const Home: React.FC = () => {
       </IonHeader>
       <IonContent className="ion-padding">
         <h2 style={{ fontWeight: 'bold', marginTop: '10px' }}>
-          Welcome, {studentName}!
+          Welcome Student!
         </h2>
 
         <IonGrid>
