@@ -81,83 +81,199 @@ const Register: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar color="primary">
           <IonTitle>Register</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        <IonItem>
-          <IonLabel position="stacked">Username</IonLabel>
-          <IonInput
-            value={username}
-            onIonChange={(e) => setUsername(e.detail.value!)}
-            placeholder="Enter username"
-          />
-        </IonItem>
+      <IonContent className="ion-padding" style={{ 
+        '--background': 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        width: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: '15px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          width: '90%',
+          maxWidth: '400px',
+          margin: 'auto',
+          position: 'relative'
+        }}>
+          <h2 style={{ 
+            textAlign: 'center', 
+            color: '#e83e8c',
+            marginBottom: '2rem',
+            fontSize: '1.8rem',
+            fontFamily: 'cursive',
+            fontWeight: 'bold',
+            fontStyle: 'italic'
+          }}>Create Account</h2>
 
-        <IonItem>
-          <IonLabel position="stacked">Email</IonLabel>
-          <IonInput
-            value={email}
-            onIonChange={(e) => setEmail(e.detail.value!)}
-            placeholder="Enter email"
-          />
-        </IonItem>
-
-        <IonItem>
-          <IonLabel position="stacked">Password</IonLabel>
-          <IonInput
-            type="password"
-            value={password}
-            onIonChange={(e) => setPassword(e.detail.value!)}
-            placeholder="Enter password"
-          />
-        </IonItem>
-
-        <IonItem>
-          <IonLabel position="stacked">Confirm Password</IonLabel>
-          <IonInput
-            type="password"
-            value={confirmPassword}
-            onIonChange={(e) => setConfirmPassword(e.detail.value!)}
-            placeholder="Confirm your password"
-          />
-        </IonItem>
-
-        <IonItemDivider>
-          <IonLabel>User Type</IonLabel>
-        </IonItemDivider>
-        <IonRadioGroup value={userType} onIonChange={(e) => setUserType(e.detail.value!)}>
-          <IonItem>
-            <IonLabel>Student</IonLabel>
-            <IonRadio slot="start" value="student" />
+          <IonItem style={{ 
+            '--background': 'transparent', 
+            marginBottom: '1rem',
+            padding: '0.5rem 0',
+            '--padding-start': '1rem',
+            '--padding-end': '1rem'
+          }}>
+            <IonLabel position="floating" style={{ 
+              color: '#e83e8c',
+              marginBottom: '0.5rem',
+              fontSize: '1rem'
+            }}>Username</IonLabel>
+            <IonInput
+              value={username}
+              onIonChange={(e) => setUsername(e.detail.value!)}
+              placeholder=" "
+              style={{ 
+                '--padding-start': '0',
+                '--color': 'black'
+              }}
+            />
           </IonItem>
-          <IonItem>
-            <IonLabel>Admin</IonLabel>
-            <IonRadio slot="start" value="admin" />
+
+          <IonItem style={{ 
+            '--background': 'transparent', 
+            marginBottom: '1rem',
+            padding: '0.5rem 0',
+            '--padding-start': '1rem',
+            '--padding-end': '1rem'
+          }}>
+            <IonLabel position="floating" style={{ 
+              color: '#e83e8c',
+              marginBottom: '0.5rem',
+              fontSize: '1rem'
+            }}>Email</IonLabel>
+            <IonInput
+              value={email}
+              onIonChange={(e) => setEmail(e.detail.value!)}
+              placeholder=" "
+              type="email"
+              style={{ 
+                '--padding-start': '0',
+                '--color': 'black'
+              }}
+            />
           </IonItem>
-        </IonRadioGroup>
 
-        <IonButton onClick={doRegister} expand="full">Register</IonButton>
+          <IonItem style={{ 
+            '--background': 'transparent', 
+            marginBottom: '1rem',
+            padding: '0.5rem 0',
+            '--padding-start': '1rem',
+            '--padding-end': '1rem'
+          }}>
+            <IonLabel position="floating" style={{ 
+              color: '#e83e8c',
+              marginBottom: '0.5rem',
+              fontSize: '1rem'
+            }}>Password</IonLabel>
+            <IonInput
+              type="password"
+              value={password}
+              onIonChange={(e) => setPassword(e.detail.value!)}
+              placeholder=" "
+              style={{ 
+                '--padding-start': '0',
+                '--color': 'black'
+              }}
+            />
+          </IonItem>
 
-        <IonToast
-          isOpen={showToast}
-          message="Account Created Successfully!"
-          duration={2000}
-          onDidDismiss={() => setShowToast(false)}
-        />
+          <IonItem style={{ 
+            '--background': 'transparent', 
+            marginBottom: '1rem',
+            padding: '0.5rem 0',
+            '--padding-start': '1rem',
+            '--padding-end': '1rem'
+          }}>
+            <IonLabel position="floating" style={{ 
+              color: '#e83e8c',
+              marginBottom: '0.5rem',
+              fontSize: '1rem'
+            }}>Confirm Password</IonLabel>
+            <IonInput
+              type="password"
+              value={confirmPassword}
+              onIonChange={(e) => setConfirmPassword(e.detail.value!)}
+              placeholder=" "
+              style={{ 
+                '--padding-start': '0',
+                '--color': 'black'
+              }}
+            />
+          </IonItem>
 
-        <IonButton routerLink="/CrimpTask" expand="full" fill="clear" shape='round'>
-                    Already have an account? Login in
-        </IonButton>
+          <IonItemDivider style={{ 
+            '--background': 'transparent',
+            marginBottom: '1rem'
+          }}>
+            <IonLabel style={{ color: '#e83e8c' }}>User Type</IonLabel>
+          </IonItemDivider>
 
-        <IonAlert
-          isOpen={showAlert}
-          onDidDismiss={() => setShowAlert(false)}
-          header="Error"
-          message={alertMessage}
-          buttons={["OK"]}
-        />
+          <IonRadioGroup value={userType} onIonChange={(e) => setUserType(e.detail.value!)}>
+            <IonItem style={{ 
+              '--background': 'transparent',
+              marginBottom: '0.5rem'
+            }}>
+              <IonLabel style={{ color: '#e83e8c' }}>Student</IonLabel>
+              <IonRadio slot="start" value="student" style={{ '--color': '#e83e8c' }} />
+            </IonItem>
+            <IonItem style={{ 
+              '--background': 'transparent',
+              marginBottom: '2rem'
+            }}>
+              <IonLabel style={{ color: '#e83e8c' }}>Admin</IonLabel>
+              <IonRadio slot="start" value="admin" style={{ '--color': '#e83e8c' }} />
+            </IonItem>
+          </IonRadioGroup>
+
+          <IonButton 
+            onClick={doRegister} 
+            expand="full"
+            style={{ 
+              '--background': '#e83e8c',
+              '--background-hover': '#d63384',
+              marginBottom: '1rem'
+            }}
+          >
+            Register
+          </IonButton>
+
+          <IonButton 
+            routerLink="/CrimpTask" 
+            expand="full"
+            fill="outline"
+            style={{ 
+              '--color': '#e83e8c',
+              '--border-color': '#e83e8c'
+            }}
+          >
+            Already have an account? Login
+          </IonButton>
+
+          <IonToast
+            isOpen={showToast}
+            message="Account Created Successfully!"
+            duration={2000}
+            onDidDismiss={() => setShowToast(false)}
+          />
+
+          <IonAlert
+            isOpen={showAlert}
+            onDidDismiss={() => setShowAlert(false)}
+            header="Error"
+            message={alertMessage}
+            buttons={["OK"]}
+          />
+        </div>
       </IonContent>
     </IonPage>
   );
