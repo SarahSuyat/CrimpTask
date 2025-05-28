@@ -66,31 +66,6 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/CrimpTask/app',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      // The user will be redirected to Google's consent screen
-      // After successful authentication, they'll be redirected back to the app
-    } catch (err) {
-      setAlertMessage(err instanceof Error ? err.message : "Failed to sign in with Google");
-      setShowAlert(true);
-    }
-  };
-
   return (
     <IonPage>
       <IonHeader>
@@ -258,19 +233,6 @@ const Register: React.FC = () => {
             }}
           >
             Register
-          </IonButton>
-
-          <IonButton 
-            expand="full" 
-            fill="outline" 
-            onClick={handleGoogleLogin}
-            style={{ 
-              '--color': '#e83e8c',
-              '--border-color': '#e83e8c',
-              marginBottom: '1rem'
-            }}
-          >
-            Sign up with Google
           </IonButton>
 
           <IonButton 

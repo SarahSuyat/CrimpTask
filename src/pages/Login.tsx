@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IonButton,
   IonContent,
@@ -63,10 +63,10 @@ const Login: React.FC = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/CrimpTask/app',
+          redirectTo: window.location.origin + '/CrimpTask/auth-callback',
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         },
       });
@@ -74,9 +74,6 @@ const Login: React.FC = () => {
       if (error) {
         throw error;
       }
-
-      // The user will be redirected to Google's consent screen
-      // After successful authentication, they'll be redirected back to the app
     } catch (err) {
       setAlertMessage(err instanceof Error ? err.message : "Failed to sign in with Google");
       setShowAlert(true);
