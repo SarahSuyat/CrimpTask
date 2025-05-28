@@ -28,6 +28,8 @@ const Login: React.FC = () => {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [isCooldownActive, setIsCooldownActive] = useState(false);
+  const [showForgotPasswordAlert, setShowForgotPasswordAlert] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -181,6 +183,32 @@ const Login: React.FC = () => {
     navigation.push("/register");
   };
 
+  const handleForgotPassword = async (data: any) => {
+    // Use the email from login attempt if available, otherwise use the one from the alert
+    const emailToUse = email || data?.email;
+    if (!emailToUse) {
+      setToastMessage("Please enter your email address");
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
+        redirectTo: `${window.location.origin}/CrimpTask/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setToastMessage("Password reset instructions have been sent to your email");
+      setShowToast(true);
+      setShowForgotPasswordAlert(false);
+      setResetEmail("");
+    } catch (err) {
+      setAlertMessage(err instanceof Error ? err.message : "Failed to send reset instructions");
+      setShowAlert(true);
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -328,15 +356,61 @@ const Login: React.FC = () => {
             fill="outline"
             style={{ 
               '--color': '#e83e8c',
-              '--border-color': '#e83e8c'
+              '--border-color': '#e83e8c',
+              marginBottom: '1rem'
             }}
             disabled={isCooldownActive}
           >
             Don't have an account? Register
           </IonButton>
 
+          <IonButton 
+            onClick={() => setShowForgotPasswordAlert(true)} 
+            expand="full"
+            fill="clear"
+            style={{ 
+              '--color': '#e83e8c',
+              fontSize: '0.9rem'
+            }}
+            disabled={isCooldownActive}
+          >
+            Forgot Password?
+          </IonButton>
+
           <IonToast isOpen={showToast} message={toastMessage} duration={2000} onDidDismiss={() => setShowToast(false)} />
-          <IonAlert isOpen={showAlert} onDidDismiss={() => setShowAlert(false)} header="Error" message={alertMessage} buttons={["OK"]} />
+          <IonAlert 
+            isOpen={showAlert} 
+            onDidDismiss={() => setShowAlert(false)} 
+            header="Error" 
+            message={alertMessage} 
+            buttons={["OK"]} 
+          />
+          <IonAlert
+            isOpen={showForgotPasswordAlert}
+            onDidDismiss={() => setShowForgotPasswordAlert(false)}
+            header="Reset Password"
+            message={`Enter your email address to receive password reset instructions${email ? `\n\nCurrent email: ${email}` : ''}`}
+            inputs={[
+              {
+                name: 'email',
+                type: 'email',
+                placeholder: 'Enter your email',
+                value: email || resetEmail,
+                handler: (e: any) => setResetEmail(e.detail.value)
+              }
+            ]}
+            buttons={[
+              {
+                text: 'Cancel',
+                role: 'cancel',
+                cssClass: 'secondary'
+              },
+              {
+                text: 'Send Reset Link',
+                handler: handleForgotPassword
+              }
+            ]}
+          />
         </div>
       </IonContent>
     </IonPage>
