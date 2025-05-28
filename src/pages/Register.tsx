@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import bcrypt from 'bcryptjs';
+import Captcha from '../components/Captcha';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -27,6 +28,7 @@ const Register: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false);
 
   const doRegister = async () => {
     try {
@@ -38,6 +40,12 @@ const Register: React.FC = () => {
 
       if (password !== confirmPassword) {
         setAlertMessage("Passwords do not match.");
+        setShowAlert(true);
+        return;
+      }
+
+      if (!isCaptchaValid) {
+        setAlertMessage("Please solve the captcha correctly.");
         setShowAlert(true);
         return;
       }
@@ -222,6 +230,8 @@ const Register: React.FC = () => {
               <IonRadio slot="start" value="admin" style={{ '--color': '#e83e8c' }} />
             </IonItem>
           </IonRadioGroup>
+
+          <Captcha onValidated={setIsCaptchaValid} />
 
           <IonButton 
             onClick={doRegister} 

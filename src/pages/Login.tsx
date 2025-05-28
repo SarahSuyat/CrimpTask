@@ -16,6 +16,7 @@ import {
 } from "@ionic/react";
 import { supabase } from "../utils/supabaseClient";
 import { logoGoogle } from 'ionicons/icons';
+import Captcha from '../components/Captcha';
 
 const Login: React.FC = () => {
   const navigation = useIonRouter();
@@ -30,6 +31,7 @@ const Login: React.FC = () => {
   const [isCooldownActive, setIsCooldownActive] = useState(false);
   const [showForgotPasswordAlert, setShowForgotPasswordAlert] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -57,6 +59,12 @@ const Login: React.FC = () => {
 
     if (!email || !password) {
       setToastMessage("Please enter both email and password");
+      setShowToast(true);
+      return;
+    }
+
+    if (!isCaptchaValid) {
+      setToastMessage("Please solve the captcha correctly");
       setShowToast(true);
       return;
     }
@@ -312,6 +320,8 @@ const Login: React.FC = () => {
               disabled={isCooldownActive}
             />
           </IonItem>
+
+          <Captcha onValidated={setIsCaptchaValid} />
 
           <IonButton 
             expand="full" 
